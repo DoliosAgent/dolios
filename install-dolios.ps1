@@ -1,4 +1,4 @@
-# ============================================================================
+﻿# ============================================================================
 # Dolios installer (Windows)
 #   irm https://raw.githubusercontent.com/Rizkymahend/dolios/main/install-dolios.ps1 | iex
 #
