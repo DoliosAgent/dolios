@@ -172,25 +172,38 @@ $('#fp-prompt').addEventListener('click', async () => {
 });
 openFeature('trenches');
 
-// ---- video ---------------------------------------------------------------------------------
-const video = $('#explainer'), chaptersEl = $('#chapters');
-video.src = SITE.video; video.poster = SITE.poster;
-video.addEventListener('error', () => { $('.player').innerHTML = '<p class="lede">The video is being rendered — check back soon.</p>'; }, { once: true });
+// ---- videos (tabbed) -----------------------------------------------------------------------
+const video = $('#explainer'), chaptersEl = $('#chapters'), vtabs = $('#vtabs');
+let chs = [];
 video.addEventListener('play', () => { react('happy', 1500); say('Enjoy the tour ◆', 2000); });
-fetch('media/chapters.json').then((r) => (r.ok ? r.json() : [])).catch(() => []).then((chs) => {
-  if (!chs.length) { chaptersEl.remove(); return; }
-  chs.forEach((c) => {
-    const li = document.createElement('li');
-    const m = Math.floor(c.t / 60), s = String(Math.floor(c.t % 60)).padStart(2, '0');
-    li.innerHTML = `<button><span class="ts">${m}:${s}</span><span>${c.title}</span></button>`;
-    li.querySelector('button').addEventListener('click', () => { video.currentTime = c.t; video.play(); });
-    chaptersEl.append(li);
-  });
-  video.addEventListener('timeupdate', () => {
-    let on = 0; chs.forEach((c, i) => { if (video.currentTime >= c.t) on = i; });
-    [...chaptersEl.querySelectorAll('button')].forEach((b, i) => b.classList.toggle('on', i === on));
-  });
+video.addEventListener('timeupdate', () => {
+  let on = 0; chs.forEach((c, i) => { if (video.currentTime >= c.t) on = i; });
+  [...chaptersEl.querySelectorAll('button')].forEach((b, i) => b.classList.toggle('on', i === on));
 });
+function loadVideo(v, autoplay = false) {
+  video.src = v.src; video.poster = v.poster;
+  [...vtabs.children].forEach((b) => b.setAttribute('aria-selected', b.dataset.id === v.id));
+  chaptersEl.innerHTML = ''; chs = [];
+  fetch(v.chapters).then((r) => (r.ok ? r.json() : [])).catch(() => []).then((list) => {
+    chs = list;
+    list.forEach((c) => {
+      const li = document.createElement('li');
+      const m = Math.floor(c.t / 60), s = String(Math.floor(c.t % 60)).padStart(2, '0');
+      li.innerHTML = `<button><span class="ts">${m}:${s}</span><span>${c.title}</span></button>`;
+      li.querySelector('button').addEventListener('click', () => { video.currentTime = c.t; video.play(); });
+      chaptersEl.append(li);
+    });
+  });
+  if (autoplay) video.play().catch(() => {});
+}
+SITE.videos.forEach((v, i) => {
+  const b = document.createElement('button');
+  b.className = 'vtab'; b.setAttribute('role', 'tab'); b.dataset.id = v.id;
+  b.innerHTML = `<b>${v.label}</b><small>${v.note}</small>`;
+  b.addEventListener('click', () => loadVideo(v, true));
+  vtabs.append(b);
+});
+loadVideo(SITE.videos[0]);
 
 // ---- terminal demo -------------------------------------------------------------------------
 const script = [
