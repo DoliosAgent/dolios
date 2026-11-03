@@ -30,13 +30,13 @@ jobs, any LLM provider — and adds a trading desk on top.
 **Windows (PowerShell)**
 
 ```powershell
-irm https://raw.githubusercontent.com/Rizkymahend/dolios/main/install-dolios.ps1 | iex
+irm https://raw.githubusercontent.com/DoliosAgent/dolios/main/install-dolios.ps1 | iex
 ```
 
 **macOS / Linux / WSL**
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Rizkymahend/dolios/main/install-dolios.sh | bash
+curl -fsSL https://raw.githubusercontent.com/DoliosAgent/dolios/main/install-dolios.sh | bash
 ```
 
 The installer sets up Python, Node.js and dependencies (via the Hermes package manager) in its own

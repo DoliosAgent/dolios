@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ============================================================================
 # Dolios installer (macOS / Linux / WSL)
-#   curl -fsSL https://raw.githubusercontent.com/Rizkymahend/dolios/main/install-dolios.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/DoliosAgent/dolios/main/install-dolios.sh | bash
 #
 # Dolios is a distribution of Hermes Agent (Nous Research, MIT). This wrapper runs the
 # Hermes installer against the Dolios repository into its own home (~/.dolios), installs
@@ -9,7 +9,7 @@
 # Overrides: DOLIOS_REPO (owner/name), DOLIOS_BRANCH, DOLIOS_HOME.
 # ============================================================================
 set -euo pipefail
-REPO="${DOLIOS_REPO:-Rizkymahend/dolios}"
+REPO="${DOLIOS_REPO:-DoliosAgent/dolios}"
 BRANCH="${DOLIOS_BRANCH:-main}"
 DHOME="${DOLIOS_HOME:-$HOME/.dolios}"
 

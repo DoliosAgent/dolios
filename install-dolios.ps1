@@ -1,6 +1,6 @@
 ﻿# ============================================================================
 # Dolios installer (Windows)
-#   irm https://raw.githubusercontent.com/Rizkymahend/dolios/main/install-dolios.ps1 | iex
+#   irm https://raw.githubusercontent.com/DoliosAgent/dolios/main/install-dolios.ps1 | iex
 #
 # Dolios is a distribution of Hermes Agent (Nous Research, MIT). This wrapper runs the
 # Hermes installer against the Dolios repository into its own home (%LOCALAPPDATA%\dolios),
@@ -8,7 +8,7 @@
 # Overrides: $env:DOLIOS_REPO (owner/name), $env:DOLIOS_BRANCH, $env:DOLIOS_HOME.
 # ============================================================================
 $ErrorActionPreference = 'Stop'
-$Repo   = if ($env:DOLIOS_REPO)   { $env:DOLIOS_REPO }   else { 'Rizkymahend/dolios' }
+$Repo   = if ($env:DOLIOS_REPO)   { $env:DOLIOS_REPO }   else { 'DoliosAgent/dolios' }
 $Branch = if ($env:DOLIOS_BRANCH) { $env:DOLIOS_BRANCH } else { 'main' }
 $DHome  = if ($env:DOLIOS_HOME)   { $env:DOLIOS_HOME }   else { Join-Path $env:LOCALAPPDATA 'dolios' }
 
