@@ -190,7 +190,7 @@ export function createMascot(canvas, { reducedMotion = false, manual = false, on
   const S = {
     t: 0, mode: 'full', base: 'eyes', expr: 'eyes', exprUntil: 0, blush: 0, talk: 0,
     blink: 0, nextBlink: 1.5, look: new THREE.Vector2(), target: new THREE.Vector2(),
-    lastInput: 0, asleep: false, excite: 0, pet: 0, clicks: [], anims: [],
+    lastInput: 0, asleep: false, excite: 0, pet: 0, clicks: [], anims: [], blend: null,
     drag: null, yaw: 0, yawVel: 0, antenna: new THREE.Vector2(), antennaVel: new THREE.Vector2(),
     prevHead: new THREE.Vector2(), nextIdle: 3, zs: [],
   };
@@ -428,11 +428,17 @@ export function createMascot(canvas, { reducedMotion = false, manual = false, on
     }
 
     const k = (base) => 1 - Math.pow(base, dt);
+    if (S.blend !== null && S.mode !== 'buddy') {  // scroll-driven full -> close-up
+      const a = FRAMINGS.full, b = FRAMINGS.close, q = S.blend * S.blend * (3 - 2 * S.blend);
+      const narrowZ = camera.aspect < 0.8 ? 1.2 : 1;
+      camPosT.set(0, a.pos[1] + (b.pos[1] - a.pos[1]) * q, (a.pos[2] * narrowZ) + (b.pos[2] - a.pos[2] * narrowZ) * q);
+      camLookT.set(0, a.look[1] + (b.look[1] - a.look[1]) * q, 0);
+    }
     S.look.lerp(S.target, k(0.0015));
     camPos.lerp(camPosT, k(0.02)); camLook.lerp(camLookT, k(0.02));
     camera.position.copy(camPos); camera.lookAt(camLook);
 
-    const fm = S.mode === 'close' ? 0.55 : 1;  // calmer head-follow in the close-up
+    const fm = 1 - 0.45 * (S.mode === 'buddy' ? 0 : (S.blend ?? (S.mode === 'close' ? 1 : 0)));  // calmer head-follow in the close-up
     let headY = S.look.x * 0.6 * amp * fm, headX = -S.look.y * 0.32 * amp * fm, headZ = -S.look.x * 0.06 * amp;
     let rootY = Math.sin(t * (S.asleep ? 0.8 : 1.3)) * 0.07 * amp, sx = 1, sy = 1, spin = 0;
     let armL = 0.12, armR = -0.12, armSwing = Math.sin(t * 1.3) * 0.08 * amp, flapBoost = 0, wiggle = 0;
@@ -514,6 +520,7 @@ export function createMascot(canvas, { reducedMotion = false, manual = false, on
 
   return {
     setExpression, react, play, setMode, wake,
+    setBlend: (v) => { S.blend = v === null ? null : Math.max(0, Math.min(1, v)); },
     get mode() { return S.mode; },
     setTalk: (v) => { S.talk = Math.max(0, Math.min(1, v)); },
     lookAt: (x, y) => { S.target.set(x, y); S.lastInput = S.t; },

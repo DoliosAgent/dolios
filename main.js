@@ -81,6 +81,19 @@ function applyMode(mode) {
 // ---- site config: links, token ---------------------------------------------------------------
 document.querySelectorAll('[data-link="github"]').forEach((a) => { a.href = SITE.github; });
 if (SITE.x) document.querySelectorAll('[data-link="x"]').forEach((a) => { a.href = `https://x.com/${SITE.x}`; a.hidden = false; });
+document.querySelectorAll('[data-x-front]').forEach((a) => {
+  if (SITE.x) { a.href = `https://x.com/${SITE.x}`; a.querySelector('[data-x-label]')?.replaceChildren(`@${SITE.x}`); }
+  else { a.classList.add('soon'); a.removeAttribute('href'); a.querySelector('[data-x-label]')?.replaceChildren('X · soon'); }
+});
+document.querySelectorAll('[data-ca]').forEach((c) => { c.textContent = SITE.token.ca || 'coming soon'; c.title = SITE.token.ca || ''; });
+document.querySelectorAll('[data-ca-copy]').forEach((b) => {
+  b.disabled = !SITE.token.ca;
+  b.addEventListener('click', () => copyCA());
+});
+async function copyCA() {
+  if (!SITE.token.ca) return;
+  try { await navigator.clipboard.writeText(SITE.token.ca); toast('Contract address copied ◆'); react('diamond', 1500); play('spin'); say('Copied! Double-check it on GMGN ◆', 2400); } catch {}
+}
 document.querySelectorAll('[data-site="ticker"]').forEach((e) => { e.textContent = SITE.token.ticker; });
 $('#ca-chain').textContent = { sol: 'Solana', bsc: 'BNB Chain', base: 'Base', eth: 'Ethereum' }[SITE.token.chain] || '';
 if (SITE.token.ca) {
@@ -88,9 +101,7 @@ if (SITE.token.ca) {
   $('#ca-copy').disabled = false;
   const chart = $('#ca-chart'); chart.href = `https://gmgn.ai/${SITE.token.chain}/token/${SITE.token.ca}`; chart.hidden = false;
 }
-$('#ca-copy').addEventListener('click', async () => {
-  try { await navigator.clipboard.writeText(SITE.token.ca); toast('Contract address copied'); react('diamond', 1500); play('spin'); } catch {}
-});
+$('#ca-copy').addEventListener('click', copyCA);
 document.querySelector('.announce-x').addEventListener('click', () => $('#announce').remove());
 
 // ---- hero typing ---------------------------------------------------------------------------
@@ -256,4 +267,59 @@ const io = new IntersectionObserver((entries) => {
 }, { rootMargin: '-45% 0px -45% 0px' });
 document.querySelectorAll('main .section').forEach((s) => io.observe(s));
 addEventListener('resize', () => applyMode(currentMode));
-setTimeout(() => say('Hi! I’m Dolios ◆ — rub my head or click me.', 3800), 1400);
+// ---- loader handoff, smooth scroll, scroll-linked motion -------------------------------------
+if (mascot) {
+  window.__loader?.stage(0.85);
+  requestAnimationFrame(() => requestAnimationFrame(() => window.__loader?.done()));
+} else window.__loader?.done();
+addEventListener('dolios:ready', () => {
+  react('happy', 2200); play('jump'); lenis?.start();
+  setTimeout(() => { play('wave'); say('Hi! I’m Dolios ◆ — rub my head or click me.', 3800); }, 700);
+});
+if (!window.__loader) addEventListener('load', () => dispatchEvent(new Event('dolios:ready')));
+
+let lenis = null;
+if (window.Lenis && !reduced) {
+  lenis = new window.Lenis({ lerp: 0.085, smoothWheel: true, wheelMultiplier: 0.9 });
+  lenis.stop();
+  const raf = (t) => { lenis.raf(t); requestAnimationFrame(raf); };
+  requestAnimationFrame(raf);
+  document.querySelectorAll('a[href^="#"]').forEach((a) => a.addEventListener('click', (e) => {
+    const id = a.getAttribute('href');
+    if (id.length < 2 || !document.querySelector(id)) return;
+    e.preventDefault(); lenis.scrollTo(id, { offset: id === '#intro' ? -200 : 0, duration: 1.4 });
+  }));
+}
+
+const intro = $('#intro'), meet = $('#meet');
+const heroEls = ['.hero-title', '.hero-sub', '.prompt-card', '.hero-list', '.scroll'].map((q) => document.querySelector(q));
+const meetEls = ['.cap-strip', '.meet-title', '.meet-side'].map((q) => document.querySelector(q));
+const clamp01 = (x) => Math.max(0, Math.min(1, x));
+let ticking = false;
+function onScroll() {
+  if (ticking) return; ticking = true;
+  requestAnimationFrame(() => {
+    ticking = false;
+    const y = window.scrollY, span = Math.max(1, meet.offsetTop - intro.offsetTop);
+    const p = clamp01((y - intro.offsetTop) / span);
+    if (narrow() || reduced) { mascot?.setBlend(null); return; }
+    mascot?.setBlend(currentMode === 'buddy' ? null : p);
+    heroEls.forEach((el, i) => { if (!el) return;
+      el.style.transform = `translate3d(0, ${-y * (0.12 + i * 0.05)}px, 0)`; el.style.opacity = String(clamp01(1 - p * 1.6)); });
+    const q = clamp01((p - 0.35) / 0.65);
+    meetEls.forEach((el, i) => { if (!el) return;
+      el.style.transform = `translate3d(0, ${(1 - q) * (50 + i * 25)}px, 0)`; el.style.opacity = String(q); });
+  });
+}
+addEventListener('scroll', onScroll, { passive: true });
+onScroll();
+
+// staggered reveal for everything below the fold
+const revealSel = ['.sec-head', '.player', '.feat-list', '.feat-panel', '.steps-big li', '.term', '#replay', '.card', '.token-grid .sec-head',
+  '.ca-card', '.install-box > *', '.stats div'];
+const revealIO = new IntersectionObserver((entries) => entries.forEach((e) => {
+  if (e.isIntersecting) { e.target.classList.add('in'); revealIO.unobserve(e.target); }
+}), { rootMargin: '0px 0px -10% 0px' });
+revealSel.forEach((sel) => document.querySelectorAll(sel).forEach((el, i) => {
+  el.classList.add('reveal'); el.style.setProperty('--d', `${Math.min(i, 6) * 0.08}s`); revealIO.observe(el);
+}));
