@@ -138,6 +138,47 @@ _BUILTIN_SKINS: dict[str, dict[str, Any]] = {
 [#DD4A3A]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⚔⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
 [dim #6B1717]⠀⠀⠀⠀⠀⠀⠀⠀war god online⠀⠀⠀⠀⠀⠀⠀⠀[/]""",
     },
+    # Dolios: the GMGN trading distribution's default skin — near-black with a spectrum bezel.
+    "dolios": {
+        "name": "dolios", "description": "Dolios — spectrum neon on black, built for the trenches",
+        "colors": {
+            "banner_border": "#2DD4BF", "banner_title": "#F5F5F5", "banner_accent": "#34D399",
+            "banner_dim": "#6B7280", "banner_text": "#E5E7EB", "ui_accent": "#34D399",
+            "ui_label": "#22D3EE", "ui_ok": "#34D399", "ui_error": "#F43F5E", "ui_warn": "#FACC15",
+            "prompt": "#F5F5F5", "input_rule": "#2DD4BF", "response_border": "#A78BFA",
+            "status_bar_bg": "#0B0D10", "status_bar_text": "#D1D5DB",
+            "status_bar_strong": "#34D399", "status_bar_dim": "#6B7280",
+            "status_bar_good": "#34D399", "status_bar_warn": "#FACC15", "status_bar_bad": "#FB923C",
+            "status_bar_critical": "#F43F5E", "session_label": "#22D3EE",
+            "session_border": "#374151", "completion_menu_bg": "#0B0D10",
+            "completion_menu_current_bg": "#1F2937", "selection_bg": "#1F2937",
+            "shell_dollar": "#34D399", "voice_status_bg": "#0B0D10"},
+        "spinner": {
+            "waiting_faces": ["(•_•)", "(◉_◉)", "(⌐■_■)", "(•‿•)", "(◔_◔)"],
+            "thinking_faces": ["(◉_◉)", "(⌐■_■)", "(•_•)", "(◔_◔)", "(¬_¬)"],
+            "thinking_verbs": [
+                "reading the tape", "scanning the trenches", "tracking smart money", "checking the rug ratio",
+                "counting bundlers", "sizing the position", "watching the candles", "sniffing out insiders"],
+            "wings": _wings("◆", "▲", "▼", "●")},
+        "branding": _branding("Dolios", "◆", "Stay sharp. ◆", prompt="❯"),
+        "tool_prefix": "┊",
+        "banner_logo": """[bold #22D3EE]██████╗  ██████╗ ██╗     ██╗ ██████╗ ███████╗[/]
+[bold #2DD4BF]██╔══██╗██╔═══██╗██║     ██║██╔═══██╗██╔════╝[/]
+[bold #34D399]██║  ██║██║   ██║██║     ██║██║   ██║███████╗[/]
+[bold #FACC15]██║  ██║██║   ██║██║     ██║██║   ██║╚════██║[/]
+[bold #FB923C]██████╔╝╚██████╔╝███████╗██║╚██████╔╝███████║[/]
+[bold #F43F5E]╚═════╝  ╚═════╝ ╚══════╝╚═╝ ╚═════╝ ╚══════╝[/]""",
+        "banner_hero": """[#22D3EE]  ╭━━━━━━━━━━━━━━━━╮[/]
+[#2DD4BF]  ┃ ╭────────────╮ ┃[/]
+[#34D399]  ┃ │            │ ┃[/]
+[#FACC15]  ┃ │  [bold #FFFFFF]▐█▌[/]  [bold #FFFFFF]▐█▌[/]  │ ┃[/]
+[#FB923C]  ┃ │            │ ┃[/]
+[#F43F5E]  ┃ ╰────────────╯ ┃[/]
+[#A78BFA]  ╰━━━━━━━━━━━━━━━━╯[/]
+[#9CA3AF]     ╭─┤ [#22D3EE]●[/] [#34D399]●[/] [#F43F5E]●[/] ├─╮[/]
+[#6B7280]     ╰───────────╯[/]
+[dim #6B7280]   cunning, online[/]""",
+    },
     "mono": {
         "name": "mono", "description": "Monochrome — clean grayscale",
         "colors": {

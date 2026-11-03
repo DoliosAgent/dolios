@@ -39,6 +39,7 @@ from tools.approval_floors import (
 from tools.approval_gateway_wait import _await_gateway_decision
 from tools.approval_prompt import _present_with_selected_transport, _transport_choice, prompt_dangerous_approval
 from tools.approval_smart import _smart_verdict
+from tools.approval_trade import check_trade_guard
 
 logger = logging.getLogger(__name__)
 
@@ -1133,6 +1134,9 @@ def check_dangerous_command(command: str, env_type: str,
     blocked = _floor_block(command)
     if blocked is not None:
         return blocked
+    trade = check_trade_guard(command, approval_callback)  # Dolios: trades ignore yolo
+    if trade is not None:
+        return trade
     if _yolo_active():
         return _approved()
     if _command_matches_permanent_allowlist(command):
@@ -1193,6 +1197,9 @@ def check_all_command_guards(command: str, env_type: str,
     blocked = _floor_block(command, sudo_guard=True)
     if blocked is not None:
         return blocked
+    trade = check_trade_guard(command, approval_callback)  # Dolios: trades ignore yolo
+    if trade is not None:
+        return trade
 
     from agent.terminal_approval_batch import consume_prepared_guard
     prepared = consume_prepared_guard(command, env_type, has_host_access)
