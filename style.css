@@ -80,38 +80,25 @@ code { font-family: var(--mono); font-size: 0.9em; color: var(--green); }
 .btn-ghost:hover { color: var(--text); border-color: var(--muted); }
 .btn-ghost-link { color: var(--body); font-size: 13px; }
 
-/* ---- mascot wrapper: one fixed stage, three framings ---------------------------------- */
-#mascot-wrap {
-  position: fixed; z-index: 15; left: 50%; top: var(--nav-h); width: min(56vw, 800px); height: calc(100vh - var(--nav-h));
-  transform: translateX(-50%); transition: left .9s cubic-bezier(.2,.8,.2,1), top .9s cubic-bezier(.2,.8,.2,1),
-  width .9s cubic-bezier(.2,.8,.2,1), height .9s cubic-bezier(.2,.8,.2,1), transform .9s cubic-bezier(.2,.8,.2,1), opacity .4s;
+/* ---- mascot: full-screen transparent canvas + floating UI ----------------------------- */
+#mascot { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 15; pointer-events: none; display: block; touch-action: pan-y; }
+#m-anchor { position: absolute; left: 0; right: 0; top: 0; height: 56vh; pointer-events: none; display: none; }
+.bubble {
+  position: fixed; left: 0; top: 0; z-index: 40; max-width: 280px; width: max-content; padding: 10px 14px; border-radius: 14px;
+  background: #f1f2f4; color: #0a0b0e; font-size: 14.5px; line-height: 1.45; font-weight: 500; box-shadow: 0 12px 34px rgba(0,0,0,0.4);
+  opacity: 0; pointer-events: none; transition: opacity .25s; will-change: transform;
 }
-#mascot { width: 100%; height: 100%; display: block; touch-action: pan-y; }
-#mascot-wrap.m-buddy { left: calc(100vw - 182px); top: calc(100vh - 212px); width: 164px; height: 196px; transform: none; }
-#mascot-wrap.m-buddy::before {
-  content: ""; position: absolute; inset: 22px 10px 6px; border-radius: 50%; z-index: -1;
-  background: radial-gradient(closest-side, rgba(52,211,153,0.16), rgba(167,139,250,0.08) 60%, transparent);
-}
-#mascot-wrap.off { opacity: 0; pointer-events: none; }
+.bubble::after { content: ""; position: absolute; bottom: -7px; width: 14px; height: 14px; background: #f1f2f4; transform: rotate(45deg); border-radius: 2px; left: var(--tail, 80%); }
+.bubble.show { opacity: 1; }
 .buddy-hide, .buddy-show {
-  position: absolute; display: none; width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--line-2);
-  background: var(--panel); color: var(--muted); cursor: pointer; font-size: 14px; line-height: 1;
+  position: fixed; z-index: 41; width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--line-2);
+  background: var(--panel); color: var(--muted); cursor: pointer; font-size: 14px; line-height: 1; display: none;
 }
-.m-buddy .buddy-hide { display: block; right: 4px; top: 8px; }
-.buddy-show { position: fixed; z-index: 15; right: 22px; bottom: 22px; width: 46px; height: 46px; font-size: 18px; color: var(--green); }
+.buddy-hide.on { display: block; }
+.buddy-show { right: 22px; bottom: 22px; width: 46px; height: 46px; font-size: 18px; color: var(--green); }
 .buddy-show:not([hidden]) { display: block; }
 
-.bubble {
-  position: absolute; right: 64%; top: 18%; max-width: 280px; padding: 10px 14px; border-radius: 14px 14px 4px 14px;
-  background: #f1f2f4; color: #0a0b0e; font-size: 14.5px; line-height: 1.45; font-weight: 500;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.35); opacity: 0; transform: translateY(6px) scale(.96); transform-origin: bottom right;
-  transition: opacity .25s, transform .25s; pointer-events: none;
-}
-.bubble.show { opacity: 1; transform: none; }
-.m-buddy .bubble { right: 82%; top: 4px; width: max-content; max-width: 240px; }
-.m-close .bubble { right: 62%; top: 30%; }
-
-.rail { position: fixed; z-index: 12; left: var(--gutter); top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 12px; transition: opacity .3s; }
+.rail { position: fixed; z-index: 12; left: var(--gutter); top: 36%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 12px; transition: opacity .3s; }
 .rail a { font-family: var(--mono); font-size: 11px; text-transform: uppercase; color: var(--dim); }
 .rail a::before { content: "•"; margin-right: 8px; }
 .rail a:hover { color: var(--body); }
@@ -133,7 +120,7 @@ h3 { font-size: 28px; line-height: 1.15; }
 
 /* hero */
 .hero { display: grid; grid-template-columns: 20% 30% 30% 20%; grid-template-rows: auto 1fr auto; min-height: calc(100vh - var(--nav-h) - 43px); padding-top: 56px; padding-bottom: 40px; }
-.prompt-card { grid-column: 2; grid-row: 1; position: relative; max-width: 320px; margin-top: 40px; border: 1px solid var(--line-2); background: var(--bg); padding: 18px 20px 16px; z-index: 16; }
+.prompt-card { grid-column: 2; grid-row: 1; position: relative; max-width: 290px; margin-left: -70px; margin-top: 40px; border: 1px solid var(--line-2); background: var(--bg); padding: 18px 20px 16px; z-index: 16; }
 .prompt-card .q { position: absolute; top: -42px; left: -1px; width: 42px; height: 42px; display: grid; place-items: center; border: 1px solid var(--line-2); border-bottom: 0; font-size: 26px; background: var(--bg); }
 .corner { position: absolute; width: 10px; height: 10px; border-color: var(--muted); border-style: solid; }
 .corner.tl { top: -50px; left: -14px; border-width: 1px 0 0 1px; } .corner.bl { bottom: -10px; left: -14px; border-width: 0 0 1px 1px; }
@@ -352,12 +339,11 @@ canvas.w-canvas { width: 100%; height: 300px; border-radius: 10px; background: #
   .nav-links, .rail { display: none; }
   .announce span { font-size: 13px; }
   .section { padding: 80px var(--gutter); }
-  #mascot-wrap.m-full, #mascot-wrap.m-close { position: absolute; top: calc(var(--nav-h) + 44px); width: 100%; height: 56vh; left: 0; transform: none; }
-  #mascot-wrap.m-buddy { position: fixed; left: calc(100vw - 140px); top: calc(100vh - 168px); width: 130px; height: 155px; }
-  .m-buddy .bubble { max-width: 200px; font-size: 13.5px; }
+  #m-anchor { display: block; }
+  .bubble { max-width: 210px; font-size: 13.5px; }
   .hero, .meet, .how-grid, .token-grid { display: flex; flex-direction: column; gap: 22px; }
   .hero { padding-top: calc(56vh + 30px); min-height: auto; }
-  .prompt-card { margin-top: 48px; max-width: none; }
+  .prompt-card { margin-top: 48px; max-width: none; margin-left: 0; }
   .hero > *, .meet > * { align-self: stretch !important; justify-self: stretch !important; }
   .hero-list li { justify-content: flex-start; gap: 10px; }
   .hero-list { margin: 0; width: 100%; justify-self: auto; }
@@ -378,7 +364,6 @@ canvas.w-canvas { width: 100%; height: 300px; border-radius: 10px; background: #
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .typed::after { animation: none; }
-  #mascot-wrap { transition: none; }
 }
 
 /* ---- loader ----------------------------------------------------------------------------- */

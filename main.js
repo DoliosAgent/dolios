@@ -42,9 +42,10 @@ const LINES = {
 };
 const pickLine = (k) => LINES[k][Math.floor(Math.random() * LINES[k].length)];
 let mascot = null;
+const canvas = $('#mascot');
 try {
-  mascot = createMascot($('#mascot'), {
-    reducedMotion: reduced,
+  mascot = createMascot(canvas, {
+    reducedMotion: reduced, fullscreen: true,
     onReact: (what) => {
       if (what === 'pet') { hearts(); say(pickLine('pet')); }
       else if (LINES[what]) say(pickLine(what));
@@ -53,30 +54,60 @@ try {
   });
 } catch (err) {
   console.warn('Mascot disabled (WebGL unavailable):', err);
-  $('#mascot-wrap').remove();
+  canvas.remove();
 }
 const face = (n) => mascot?.setExpression(n);
 const react = (n, ms) => mascot?.react(n, ms);
 const play = (n) => mascot?.play(n);
 const ctx = { react, play, say, toast, open: (id, payload) => openFeature(id, payload, true) };
 
-// buddy hide/show (per-viewer preference)
-const wrap = $('#mascot-wrap');
+// ---- where the robot lives: full (hero) → close (meet) → buddy (rest) ------------------------
+const NAV = 64;
 let buddyHidden = false;
 try { buddyHidden = localStorage.getItem('dolios-buddy') === 'off'; } catch {}
-$('#buddy-hide')?.addEventListener('click', () => { buddyHidden = true; try { localStorage.setItem('dolios-buddy', 'off'); } catch {} applyMode(currentMode); });
-$('#buddy-show').addEventListener('click', () => { buddyHidden = false; try { localStorage.removeItem('dolios-buddy'); } catch {} applyMode(currentMode); say('I’m back ◆'); });
+const hideBtn = $('#buddy-hide'), showBtn = $('#buddy-show');
+hideBtn.addEventListener('click', () => { buddyHidden = true; try { localStorage.setItem('dolios-buddy', 'off'); } catch {} applyMode(currentMode, true); });
+showBtn.addEventListener('click', () => { buddyHidden = false; try { localStorage.removeItem('dolios-buddy'); } catch {} applyMode(currentMode, true); say('I’m back ◆'); });
 let currentMode = 'full';
-function applyMode(mode) {
-  if (!wrap) return;
-  currentMode = mode;
-  const m = narrow() && mode === 'close' ? 'buddy' : mode;
-  wrap.classList.remove('m-full', 'm-close', 'm-buddy'); wrap.classList.add(`m-${m}`);
-  const hide = m === 'buddy' && buddyHidden;
-  wrap.classList.toggle('off', hide); $('#buddy-show').hidden = !hide;
-  document.body.classList.toggle('buddy-mode', m === 'buddy');
-  mascot?.setMode(m);
+function targetRect(mode) {
+  const iw = innerWidth, ih = innerHeight;
+  if (mode === 'buddy') {
+    const w = narrow() ? 150 : 240, h = narrow() ? 180 : 290;
+    return { x: iw - w - (narrow() ? 4 : 12), y: buddyHidden ? ih + 60 : ih - h - 6, w, h };
+  }
+  if (narrow()) { const r = $('#m-anchor').getBoundingClientRect(); return { x: r.left, y: r.top, w: r.width, h: r.height }; }
+  const w = Math.min(iw * 0.56, 800);
+  const shift = mode === 'close' ? Math.min(110, iw * 0.07) : 0;  // close-up leaves room for the title on the left
+  return { x: (iw - w) / 2 + shift, y: NAV, w, h: ih - NAV };
 }
+function applyMode(mode, force = false) {
+  if (!mascot || (mode === currentMode && !force)) return;
+  currentMode = mode;
+  mascot.setMode(mode === 'close' && narrow() ? 'full' : mode);
+  mascot.setRect(targetRect(mode));
+  document.body.classList.toggle('buddy-mode', mode === 'buddy');
+  showBtn.hidden = !(mode === 'buddy' && buddyHidden);
+}
+if (mascot) mascot.setRect(targetRect('full'), true);
+
+// speech bubble + hide button follow the robot's head every frame
+function follow() {
+  requestAnimationFrame(follow);
+  if (!mascot) return;
+  if (narrow() && currentMode !== 'buddy') mascot.setRect(targetRect(currentMode));
+  const a = mascot.anchor();
+  const bw = bubble.offsetWidth || 200, bh = bubble.offsetHeight || 40;
+  let left = a.x - bw + 34, tail = bw - 44;
+  if (left < 12) { left = a.x - 34; tail = 20; }
+  left = Math.max(12, Math.min(innerWidth - bw - 12, left));
+  const top = Math.max(NAV + 8, a.y - bh - 14);
+  bubble.style.transform = `translate3d(${left}px, ${top}px, 0)`;
+  bubble.style.setProperty('--tail', `${Math.max(12, Math.min(bw - 26, a.x - left - 7))}px`);
+  const showHide = currentMode === 'buddy' && !buddyHidden;
+  hideBtn.classList.toggle('on', showHide);
+  if (showHide) { const r = targetRect('buddy'); hideBtn.style.left = `${r.x + r.w - 30}px`; hideBtn.style.top = `${r.y + 10}px`; }
+}
+requestAnimationFrame(follow);
 
 // ---- site config: links, token ---------------------------------------------------------------
 document.querySelectorAll('[data-link="github"]').forEach((a) => { a.href = SITE.github; });
@@ -268,7 +299,6 @@ const io = new IntersectionObserver((entries) => {
     if (!e.isIntersecting) continue;
     const id = e.target.id;
     rail.forEach((a) => a.classList.toggle('on', a.dataset.rail === id));
-    applyMode(e.target.dataset.mode || 'buddy');
     meetVisible = id === 'meet';
     if (meetVisible) showCap(cap);
     else if (id === 'features') face(FEATURES[featIdx].expr);
@@ -279,7 +309,7 @@ const io = new IntersectionObserver((entries) => {
   }
 }, { rootMargin: '-45% 0px -45% 0px' });
 document.querySelectorAll('main .section').forEach((s) => io.observe(s));
-addEventListener('resize', () => applyMode(currentMode));
+addEventListener('resize', () => applyMode(currentMode, true));
 // ---- loader handoff, smooth scroll, scroll-linked motion -------------------------------------
 if (mascot) {
   window.__loader?.stage(0.85);
@@ -308,20 +338,26 @@ const intro = $('#intro'), meet = $('#meet');
 const heroEls = ['.hero-title', '.hero-sub', '.prompt-card', '.hero-list', '.scroll'].map((q) => document.querySelector(q));
 const meetEls = ['.cap-strip', '.meet-title', '.meet-side'].map((q) => document.querySelector(q));
 const clamp01 = (x) => Math.max(0, Math.min(1, x));
-let ticking = false;
+let ticking = false, lastY = window.scrollY, lastT = performance.now();
 function onScroll() {
   if (ticking) return; ticking = true;
   requestAnimationFrame(() => {
     ticking = false;
-    const y = window.scrollY, span = Math.max(1, meet.offsetTop - intro.offsetTop);
+    const y = window.scrollY, now = performance.now();
+    const vel = (y - lastY) / Math.max(8, now - lastT) * 16; lastY = y; lastT = now;
+    mascot?.nudge(vel);
+    const span = Math.max(1, meet.offsetTop - intro.offsetTop);
     const p = clamp01((y - intro.offsetTop) / span);
+    // mode follows scroll position, so the robot shrinks away before the next section's content arrives
+    const buddyAt = meet.offsetTop + meet.offsetHeight * 0.3;
+    applyMode(y > buddyAt ? 'buddy' : p > 0.5 ? 'close' : 'full');
     if (narrow() || reduced) { mascot?.setBlend(null); return; }
     mascot?.setBlend(currentMode === 'buddy' ? null : p);
     heroEls.forEach((el, i) => { if (!el) return;
       el.style.transform = `translate3d(0, ${-y * (0.12 + i * 0.05)}px, 0)`; el.style.opacity = String(clamp01(1 - p * 1.6)); });
-    const q = clamp01((p - 0.35) / 0.65);
+    const q = clamp01((p - 0.35) / 0.65), out = clamp01((y - buddyAt + 120) / 240);
     meetEls.forEach((el, i) => { if (!el) return;
-      el.style.transform = `translate3d(0, ${(1 - q) * (50 + i * 25)}px, 0)`; el.style.opacity = String(q); });
+      el.style.transform = `translate3d(0, ${(1 - q) * (50 + i * 25) - out * 40}px, 0)`; el.style.opacity = String(q * (1 - out)); });
   });
 }
 addEventListener('scroll', onScroll, { passive: true });

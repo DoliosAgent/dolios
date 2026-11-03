@@ -109,12 +109,10 @@
     </div>
   </header>
 
-  <!-- the mascot lives in one fixed wrapper that changes framing per section -->
-  <div id="mascot-wrap" class="m-full">
-    <canvas id="mascot" aria-label="Dolios robot mascot. Move your cursor, rub its head, click or drag it." role="img"></canvas>
-    <div class="bubble" id="bubble" role="status" aria-live="polite"></div>
-    <button class="buddy-hide" id="buddy-hide" aria-label="Hide Dolios buddy">×</button>
-  </div>
+  <!-- one transparent full-screen canvas; the robot glides inside it, so it is never clipped -->
+  <canvas id="mascot" aria-label="Dolios robot mascot. Move your cursor, rub its head, click or drag it." role="img"></canvas>
+  <div class="bubble" id="bubble" role="status" aria-live="polite"></div>
+  <button class="buddy-hide" id="buddy-hide" aria-label="Hide Dolios buddy">×</button>
   <button class="buddy-show" id="buddy-show" aria-label="Show Dolios buddy" hidden>◆</button>
 
   <nav class="rail" aria-label="Sections">
@@ -131,6 +129,7 @@
   <main>
     <!-- 01 INTRO -->
     <section id="intro" class="section hero" data-mode="full" data-expr="eyes">
+      <div id="m-anchor" aria-hidden="true"></div>
       <div class="prompt-card">
         <span class="corner tl"></span><span class="corner bl"></span>
         <div class="q">“</div>

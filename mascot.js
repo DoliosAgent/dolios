@@ -70,15 +70,15 @@ export const EXPRESSIONS = ['eyes', 'happy', 'wink', 'love', 'star', 'sleepy', '
 
 const FRAMINGS = {
   full: { pos: [0, 0.35, 12.4], look: [0, 0.35, 0] },
-  close: { pos: [0, 1.6, 10], look: [0, 2.05, 0] },
+  close: { pos: [0, 1.5, 12], look: [0, 1.8, 0] },
   buddy: { pos: [0, 0.55, 10.2], look: [0, 0.45, 0] },
 };
 
-export function createMascot(canvas, { reducedMotion = false, manual = false, onReact = () => {} } = {}) {
+export function createMascot(canvas, { reducedMotion = false, manual = false, fullscreen = false, onReact = () => {} } = {}) {
   const rand = manual ? mulberry32(7) : Math.random;
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance',
     preserveDrawingBuffer: manual });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, manual ? 1 : 2));
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, manual ? 1 : 1.75));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.05;
@@ -191,6 +191,7 @@ export function createMascot(canvas, { reducedMotion = false, manual = false, on
     t: 0, mode: 'full', base: 'eyes', expr: 'eyes', exprUntil: 0, blush: 0, talk: 0,
     blink: 0, nextBlink: 1.5, look: new THREE.Vector2(), target: new THREE.Vector2(),
     lastInput: 0, asleep: false, excite: 0, pet: 0, clicks: [], anims: [], blend: null,
+    rect: null, rectT: null, lean: 0, leanT: 0, saccade: new THREE.Vector2(), nextSaccade: 1,
     drag: null, yaw: 0, yawVel: 0, antenna: new THREE.Vector2(), antennaVel: new THREE.Vector2(),
     prevHead: new THREE.Vector2(), nextIdle: 3, zs: [],
   };
@@ -242,7 +243,7 @@ export function createMascot(canvas, { reducedMotion = false, manual = false, on
       fx.beginPath(); fx.moveTo(i, 0); fx.lineTo(i, W); fx.stroke();
       fx.beginPath(); fx.moveTo(0, i); fx.lineTo(W, i); fx.stroke();
     }
-    const cx = W / 2 + S.look.x * 34, cy = W / 2 - 14 - S.look.y * 26;
+    const cx = W / 2 + (S.look.x + S.saccade.x) * 34, cy = W / 2 - 14 - (S.look.y + S.saccade.y) * 26;
     const e = S.expr;
     fx.save();
     fx.shadowColor = 'rgba(255,255,255,0.85)'; fx.shadowBlur = 28;
@@ -330,7 +331,7 @@ export function createMascot(canvas, { reducedMotion = false, manual = false, on
   const raycaster = new THREE.Raycaster(), ndc = new THREE.Vector2();
   let lastMove = null;
   function hitAt(clientX, clientY) {
-    const r = canvas.getBoundingClientRect();
+    const r = viewRect();
     if (clientX < r.left || clientX > r.right || clientY < r.top || clientY > r.bottom) return null;
     ndc.set(((clientX - r.left) / r.width) * 2 - 1, -((clientY - r.top) / r.height) * 2 + 1);
     raycaster.setFromCamera(ndc, camera);
@@ -338,7 +339,7 @@ export function createMascot(canvas, { reducedMotion = false, manual = false, on
     return hit ? hit.object.userData.part : null;
   }
   function onMove(e) {
-    const r = canvas.getBoundingClientRect();
+    const r = viewRect();
     const cx = r.left + r.width / 2, cy = r.top + r.height * (S.mode === 'close' ? 0.55 : 0.42);
     const span = S.mode === 'buddy' ? 0.35 : 0.5;
     S.target.set(
@@ -354,6 +355,8 @@ export function createMascot(canvas, { reducedMotion = false, manual = false, on
     }
     const part = hitAt(e.clientX, e.clientY);
     canvas.style.cursor = part ? (part === 'head' || part === 'face' ? 'grab' : 'pointer') : 'default';
+    // full-screen canvas only catches the pointer while it is over the robot
+    if (fullscreen) canvas.style.pointerEvents = part ? 'auto' : 'none';
     if ((part === 'head' || part === 'face') && lastMove) {
       const speed = Math.hypot(e.clientX - lastMove.x, e.clientY - lastMove.y);
       S.pet = Math.min(1.6, S.pet + speed * 0.004);
@@ -388,17 +391,25 @@ export function createMascot(canvas, { reducedMotion = false, manual = false, on
   }
   if (!manual) {
     window.addEventListener('pointermove', onMove, { passive: true });
-    canvas.addEventListener('pointerdown', onDown);
+    (fullscreen ? window : canvas).addEventListener('pointerdown', onDown);
     window.addEventListener('pointerup', onUp);
   }
 
   // ---- sizing & framing ------------------------------------------------------------------------
+  function viewRect() {
+    if (!fullscreen || !S.rect) return canvas.getBoundingClientRect();
+    const r = S.rect; return { left: r.x, top: r.y, right: r.x + r.w, bottom: r.y + r.h, width: r.w, height: r.h };
+  }
   function resize() {
-    const w = canvas.clientWidth, h = canvas.clientHeight;
+    const w = fullscreen ? innerWidth : canvas.clientWidth, h = fullscreen ? innerHeight : canvas.clientHeight;
     if (!w || !h) return;
     renderer.setSize(w, h, false);
-    camera.aspect = w / h; camera.updateProjectionMatrix();
+    if (!fullscreen) { camera.aspect = w / h; camera.updateProjectionMatrix(); }
     applyFraming(true);
+  }
+  function setRect(r, snap = false) {
+    S.rectT = { ...r };
+    if (snap || !S.rect) S.rect = { ...r };
   }
   function applyFraming(soft) {
     const f = FRAMINGS[S.mode];
@@ -407,7 +418,7 @@ export function createMascot(canvas, { reducedMotion = false, manual = false, on
     if (!soft) { camPos.copy(camPosT); camLook.copy(camLookT); }
   }
   function setMode(mode) { if (FRAMINGS[mode] && mode !== S.mode) { S.mode = mode; applyFraming(true); } }
-  if (!manual) new ResizeObserver(resize).observe(canvas);
+  if (!manual) { if (fullscreen) addEventListener('resize', resize); else new ResizeObserver(resize).observe(canvas); }
   resize(); applyFraming(false);
 
   // ---- per-frame update ------------------------------------------------------------------------
@@ -428,6 +439,12 @@ export function createMascot(canvas, { reducedMotion = false, manual = false, on
     }
 
     const k = (base) => 1 - Math.pow(base, dt);
+    if (fullscreen && S.rect && S.rectT) {  // glide the robot's viewport toward its target box
+      const f = k(0.0009);
+      for (const key of ['x', 'y', 'w', 'h']) S.rect[key] += (S.rectT[key] - S.rect[key]) * f;
+      const asp = Math.max(0.2, S.rect.w / Math.max(1, S.rect.h));
+      if (Math.abs(asp - camera.aspect) > 1e-4) { camera.aspect = asp; camera.updateProjectionMatrix(); }
+    }
     if (S.blend !== null && S.mode !== 'buddy') {  // scroll-driven full -> close-up
       const a = FRAMINGS.full, b = FRAMINGS.close, q = S.blend * S.blend * (3 - 2 * S.blend);
       const narrowZ = camera.aspect < 0.8 ? 1.2 : 1;
@@ -435,6 +452,11 @@ export function createMascot(canvas, { reducedMotion = false, manual = false, on
       camLookT.set(0, a.look[1] + (b.look[1] - a.look[1]) * q, 0);
     }
     S.look.lerp(S.target, k(0.0015));
+    // keep wings + antenna inside the view: back the camera off when the box is narrow
+    const tanHalf = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+    const fitZ = Math.max(2.8 / tanHalf, 2.7 / (tanHalf * camera.aspect)) * 1.06;
+    const closeW = S.mode === 'buddy' ? 0 : (S.blend ?? (S.mode === 'close' ? 1 : 0));
+    if (closeW < 0.5) camPosT.z = Math.max(camPosT.z, fitZ * (1 - closeW * 2) + camPosT.z * closeW * 2);
     camPos.lerp(camPosT, k(0.02)); camLook.lerp(camLookT, k(0.02));
     camera.position.copy(camPos); camera.lookAt(camLook);
 
@@ -468,7 +490,10 @@ export function createMascot(canvas, { reducedMotion = false, manual = false, on
     head.rotation.z += (headZ + wiggle - head.rotation.z) * k(0.004);
     body.rotation.y += (S.look.x * 0.22 * amp - body.rotation.y) * k(0.01);
     root.position.y = -0.15 + rootY;
-    squash.scale.set(sx, sy, sx);
+    const breath = 1 + Math.sin(t * 2.1) * 0.012 * amp;
+    squash.scale.set(sx, sy * breath, sx);
+    S.leanT *= Math.pow(0.15, dt); S.lean += (S.leanT - S.lean) * k(0.01);
+    root.rotation.x = S.lean; root.rotation.z = -S.lean * 0.25;
     // drag yaw with spring back
     if (!S.drag) { S.yaw += S.yawVel; S.yawVel *= Math.pow(0.02, dt); S.yaw += (0 - S.yaw) * k(0.08); }
     spinner.rotation.y = S.yaw + spin;
@@ -490,6 +515,9 @@ export function createMascot(canvas, { reducedMotion = false, manual = false, on
     antenna.rotation.x = S.antenna.y * 0.9;
     leds.forEach((l, i) => { l.scale.setScalar(0.8 + 0.4 * (0.5 + 0.5 * Math.sin(t * 3 + i * 1.3))); });
 
+    S.nextSaccade -= dt;  // tiny eye darts make it feel alive
+    if (S.nextSaccade <= 0) { S.saccade.set((rand() - 0.5) * 0.35, (rand() - 0.5) * 0.25); S.nextSaccade = 0.6 + rand() * 1.8; }
+    S.saccade.multiplyScalar(Math.pow(0.4, dt));
     S.nextBlink -= dt;
     if (S.nextBlink <= 0) { S.blink = 1; S.nextBlink = rand() < 0.2 ? 0.18 : 2.5 + rand() * 3.5; }
     S.blink = Math.max(0, S.blink - dt * 7);
@@ -503,6 +531,10 @@ export function createMascot(canvas, { reducedMotion = false, manual = false, on
     spectrum.uniforms.uTime.value = t;
     spectrum.uniforms.uBoost.value = S.excite + (S.expr === 'love' ? 0.4 : 0);
     drawFace();
+    if (fullscreen && S.rect) {
+      const H = innerHeight, r = S.rect;
+      renderer.setViewport(r.x, H - r.y - r.h, r.w, r.h);
+    }
     renderer.render(scene, camera);
   }
 
@@ -521,6 +553,13 @@ export function createMascot(canvas, { reducedMotion = false, manual = false, on
   return {
     setExpression, react, play, setMode, wake,
     setBlend: (v) => { S.blend = v === null ? null : Math.max(0, Math.min(1, v)); },
+    setRect,
+    nudge: (v) => { S.leanT = Math.max(-0.22, Math.min(0.22, v * 0.004)); S.excite = Math.min(1, S.excite + Math.abs(v) * 0.0006); },
+    anchor: () => {  // screen position just above the head, for speech bubbles
+      const p = new THREE.Vector3(0, 2.25, 0.2); head.localToWorld(p); p.project(camera);
+      const r = viewRect();
+      return { x: r.left + ((p.x + 1) / 2) * r.width, y: r.top + ((1 - p.y) / 2) * r.height, visible: p.z < 1 };
+    },
     get mode() { return S.mode; },
     setTalk: (v) => { S.talk = Math.max(0, Math.min(1, v)); },
     lookAt: (x, y) => { S.target.set(x, y); S.lastInput = S.t; },
