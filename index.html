@@ -14,7 +14,7 @@
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <script type="importmap">
     { "imports": {
@@ -26,9 +26,10 @@
 <body>
   <div class="grid-lines" aria-hidden="true"><span></span><span></span><span></span></div>
 
-  <div class="announce">
-    <a href="#install">New: Dolios v1 is here — the open-source trading agent for GMGN <span class="arrow">↗</span></a>
-    <button class="announce-x" aria-label="Dismiss">×</button>
+  <div class="announce" id="announce">
+    <span><b>Dolios v1 is live</b> — the open-source trading agent for GMGN.</span>
+    <a href="#install" class="announce-cta">Get it <span aria-hidden="true">↗</span></a>
+    <button class="announce-x" aria-label="Dismiss announcement">×</button>
   </div>
 
   <header class="nav">
@@ -43,124 +44,229 @@
       <span>Dolios</span>
     </a>
     <nav class="nav-links" aria-label="Main">
+      <a href="#video">Video</a>
       <a href="#features">Features</a>
-      <a href="#demo">How it works</a>
+      <a href="#how">How it works</a>
       <a href="#safety">Safety</a>
-      <a href="https://github.com/DoliosAgent/dolios" target="_blank" rel="noopener">GitHub <span class="arrow">↗</span></a>
+      <a href="#token">$DOLIOS</a>
+      <a href="#" data-link="github" target="_blank" rel="noopener">GitHub <span aria-hidden="true">↗</span></a>
     </nav>
-    <a class="btn-launch" href="#install"><span class="dots">••</span> DOWNLOAD</a>
+    <div class="nav-right">
+      <a class="icon-btn" data-link="x" href="#" target="_blank" rel="noopener" aria-label="Dolios on X" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.8 3h3.1l-6.8 7.8L22 21h-6.2l-4.9-6.4L5.3 21H2.2l7.3-8.3L1.9 3h6.4l4.4 5.8L17.8 3zm-1.1 16.2h1.7L7.4 4.7H5.6l11.1 14.5z"/></svg>
+      </a>
+      <a class="btn-launch" href="#install"><span class="dots">••</span> DOWNLOAD</a>
+    </div>
   </header>
 
-  <canvas id="mascot" aria-label="Dolios robot mascot that follows your cursor" role="img"></canvas>
+  <!-- the mascot lives in one fixed wrapper that changes framing per section -->
+  <div id="mascot-wrap" class="m-full">
+    <canvas id="mascot" aria-label="Dolios robot mascot. Move your cursor, rub its head, click or drag it." role="img"></canvas>
+    <div class="bubble" id="bubble" role="status" aria-live="polite"></div>
+    <button class="buddy-hide" id="buddy-hide" aria-label="Hide Dolios buddy">×</button>
+  </div>
+  <button class="buddy-show" id="buddy-show" aria-label="Show Dolios buddy" hidden>◆</button>
 
   <nav class="rail" aria-label="Sections">
     <a href="#intro" data-rail="intro">Intro</a>
+    <a href="#meet" data-rail="meet">Meet</a>
+    <a href="#video" data-rail="video">Video</a>
     <a href="#features" data-rail="features">Features</a>
-    <a href="#demo" data-rail="demo">Demo</a>
+    <a href="#how" data-rail="how">How</a>
     <a href="#safety" data-rail="safety">Safety</a>
+    <a href="#token" data-rail="token">Token</a>
     <a href="#install" data-rail="install">Install</a>
   </nav>
 
   <main>
-    <!-- INTRO -->
-    <section id="intro" class="section hero" data-expr="eyes">
+    <!-- 01 INTRO -->
+    <section id="intro" class="section hero" data-mode="full" data-expr="eyes">
       <div class="prompt-card">
         <span class="corner tl"></span><span class="corner bl"></span>
         <div class="q">“</div>
         <p class="typed mono" id="typed">SCAN THE TRENCHES FOR NEW SOLANA LAUNCHES WITH SMART MONEY IN.</p>
-        <p class="ghost mono">VET $WIF AND BUY 0.2 SOL IF IT’S CLEAN.</p>
+        <p class="ghost mono">Try it: move your cursor, rub its head, click it.</p>
       </div>
-
       <ul class="hero-list mono">
         <li>Scan the trenches</li>
         <li>Vet every buy</li>
         <li>Follow smart money</li>
         <li>Trade with guardrails</li>
       </ul>
-
       <div class="hero-title">
         <p class="eyebrow mono">Unleash the cunning of</p>
         <h1><span class="boxed">Trading</span><br><span class="boxed short">Agents</span></h1>
       </div>
-
-      <p class="hero-sub">Your open-source AI agent for every chain GMGN trades — Solana, BSC, Base and Ethereum.</p>
-      <a class="scroll mono" href="#features">Scroll <span>↓</span></a>
-    </section>
-
-    <!-- FEATURES -->
-    <section id="features" class="section features" data-expr="scan">
-      <div class="tabs" role="tablist" aria-label="Dolios capabilities"></div>
-      <div class="feature-copy">
-        <p class="eyebrow mono" id="feat-num">01 / 08</p>
-        <h2 id="feat-title">Scan the trenches</h2>
-        <p id="feat-body"></p>
-        <p class="feat-cmd mono" id="feat-cmd"></p>
-      </div>
-      <div class="feature-side">
-        <h2 class="side-title">Your gateway<br>to on-chain alpha</h2>
-      </div>
-    </section>
-
-    <!-- DEMO -->
-    <section id="demo" class="section demo" data-expr="eyes">
-      <div class="demo-copy">
-        <p class="eyebrow mono">How it works</p>
-        <h2>Ask in plain English.<br>Approve every order.</h2>
-        <p>Dolios reads GMGN’s live data, does the due diligence, sizes the trade and restates it in one line. Nothing executes until you say yes.</p>
-        <button class="btn-ghost mono" id="replay">↻ Replay</button>
-      </div>
-      <div class="term" aria-label="Example Dolios session">
-        <div class="term-bar"><i></i><i></i><i></i><span class="mono">dolios — ~/trading</span></div>
-        <div class="term-body mono" id="term"></div>
-      </div>
-    </section>
-
-    <!-- SAFETY -->
-    <section id="safety" class="section safety" data-expr="alert">
-      <div class="safety-head">
-        <p class="eyebrow mono">Safety model</p>
-        <h2>Cunning,<br>not reckless.</h2>
-      </div>
-      <div class="cards">
-        <article class="card"><span class="num mono">01</span><h3>Trade guard</h3><p>Every swap, limit, TP/SL or launch stops for your approval — per exact command. Even <code>/yolo</code> can’t skip it.</p></article>
-        <article class="card"><span class="num mono">02</span><h3>Due diligence first</h3><p>Names resolve to the right contract among copycats, then liquidity, honeypot, rug ratio, bundlers and insiders are checked.</p></article>
-        <article class="card"><span class="num mono">03</span><h3>Your keys stay home</h3><p>No seed phrases, ever. A local signing key authorises GMGN orders; Dolios never holds your funds.</p></article>
-        <article class="card"><span class="num mono">04</span><h3>No autopilot by default</h3><p>Scheduled runs can research all night but can’t trade unless you explicitly turn on <code>trade_autopilot</code>.</p></article>
-      </div>
-    </section>
-
-    <!-- INSTALL -->
-    <section id="install" class="section install" data-expr="happy">
-      <div class="install-box">
-        <p class="eyebrow mono">Download</p>
-        <h2>Install Dolios</h2>
-        <p>One command. Python, Node.js and dependencies go into Dolios’ own folder.</p>
-        <div class="os-tabs" role="tablist">
-          <button role="tab" data-os="win" class="mono">Windows</button>
-          <button role="tab" data-os="unix" class="mono">macOS / Linux</button>
+      <div class="hero-sub">
+        <p>Your open-source AI agent for every chain GMGN trades — Solana, BSC, Base and Ethereum.</p>
+        <div class="hero-ctas">
+          <a class="btn-primary" href="#install">Install Dolios</a>
+          <a class="btn-text" href="#video">▶ Watch the 1-minute tour</a>
         </div>
-        <div class="cmd">
-          <code class="mono" id="cmd-text"></code>
-          <button class="copy mono" id="copy">Copy</button>
+      </div>
+      <a class="scroll mono" href="#meet">Scroll <span aria-hidden="true">↓</span></a>
+    </section>
+
+    <!-- 02 MEET (close-up, like the reference) -->
+    <section id="meet" class="section meet" data-mode="close" data-expr="eyes">
+      <div class="cap-strip" role="tablist" aria-label="What Dolios does"></div>
+      <div class="meet-title">
+        <p class="eyebrow mono">Meet Dolios</p>
+        <h2><span class="boxed">Your gateway</span><br>to on-chain alpha</h2>
+      </div>
+      <div class="meet-side">
+        <p id="cap-text">Pick a capability above — Dolios shows you what it does.</p>
+        <dl class="stats">
+          <div><dt>20</dt><dd>trading skills from GMGN’s official Agent API</dd></div>
+          <div><dt>4</dt><dd>chains: Solana, BSC, Base, Ethereum</dd></div>
+          <div><dt>0</dt><dd>orders sent without your “yes”</dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <!-- 03 VIDEO -->
+    <section id="video" class="section video" data-mode="buddy" data-expr="happy">
+      <div class="container">
+        <header class="sec-head">
+          <p class="eyebrow mono">1-minute tour</p>
+          <h2>What Dolios does, in one video</h2>
+          <p class="lede">Scanning, due diligence, smart-money tracking, guarded trading and install — narrated, with captions.</p>
+        </header>
+        <div class="player">
+          <video id="explainer" controls playsinline preload="metadata"></video>
+          <ol class="chapters" id="chapters"></ol>
         </div>
-        <ol class="steps">
-          <li>Run the command, pick your AI model provider.</li>
-          <li>Type <code>dolios</code> and say “connect my GMGN account”.</li>
-          <li>Ask for the trenches. Approve what you like.</li>
-        </ol>
-        <div class="install-links">
-          <a class="btn-launch" href="https://github.com/DoliosAgent/dolios" target="_blank" rel="noopener"><span class="dots">••</span> VIEW ON GITHUB</a>
-          <a class="mono link" href="https://github.com/DoliosAgent/dolios/releases" target="_blank" rel="noopener">Release notes ↗</a>
+      </div>
+    </section>
+
+    <!-- 04 FEATURES EXPLORER -->
+    <section id="features" class="section features" data-mode="buddy" data-expr="scan">
+      <div class="container">
+        <header class="sec-head">
+          <p class="eyebrow mono">Features</p>
+          <h2>Eight things Dolios does for you</h2>
+          <p class="lede">Pick one and play with it. The panels use demo data so you can see exactly how each skill behaves before you install.</p>
+        </header>
+        <div class="explorer">
+          <div class="feat-list" role="tablist" aria-label="Features" id="feat-list"></div>
+          <article class="feat-panel" id="feat-panel" role="tabpanel">
+            <div class="feat-info">
+              <p class="eyebrow mono" id="fp-num"></p>
+              <h3 id="fp-title"></h3>
+              <p id="fp-desc"></p>
+              <ul class="checks" id="fp-bullets"></ul>
+              <button class="prompt-chip mono" id="fp-prompt" title="Copy this prompt"></button>
+            </div>
+            <div class="feat-visual">
+              <div class="demo-tag mono">Demo data</div>
+              <div id="fp-visual"></div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- 05 HOW IT WORKS -->
+    <section id="how" class="section how" data-mode="buddy" data-expr="eyes">
+      <div class="container how-grid">
+        <div>
+          <header class="sec-head left">
+            <p class="eyebrow mono">How it works</p>
+            <h2>Ask in plain English.<br>Approve every order.</h2>
+          </header>
+          <ol class="steps-big">
+            <li><span class="mono">01</span><div><b>Ask</b><p>“Find something new on Solana with smart money in, then vet it.”</p></div></li>
+            <li><span class="mono">02</span><div><b>Dolios researches</b><p>It calls GMGN’s live data, checks the contract and sizes a trade.</p></div></li>
+            <li><span class="mono">03</span><div><b>You approve</b><p>The order is restated in one line. Nothing is sent until you say yes.</p></div></li>
+          </ol>
+          <button class="btn-ghost mono" id="replay">↻ Replay session</button>
+        </div>
+        <div class="term" aria-label="Example Dolios session">
+          <div class="term-bar"><i></i><i></i><i></i><span class="mono">dolios — example session</span></div>
+          <div class="term-body mono" id="term"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 06 SAFETY -->
+    <section id="safety" class="section safety" data-mode="buddy" data-expr="alert">
+      <div class="container">
+        <header class="sec-head">
+          <p class="eyebrow mono">Safety model</p>
+          <h2>Cunning, not reckless.</h2>
+        </header>
+        <div class="cards">
+          <article class="card"><span class="num mono">01</span><h3>Trade guard</h3><p>Every swap, limit, TP/SL or launch stops for your approval — per exact command. Even <code>/yolo</code> can’t skip it.</p></article>
+          <article class="card"><span class="num mono">02</span><h3>Due diligence first</h3><p>Names resolve to the right contract among copycats; liquidity, honeypot, rug ratio, bundlers and insiders are checked.</p></article>
+          <article class="card"><span class="num mono">03</span><h3>Your keys stay home</h3><p>No seed phrases, ever. A local signing key authorises GMGN orders; Dolios never holds your funds.</p></article>
+          <article class="card"><span class="num mono">04</span><h3>No autopilot by default</h3><p>Scheduled runs can research all night but can’t trade unless you explicitly turn on <code>trade_autopilot</code>.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <!-- 07 TOKEN -->
+    <section id="token" class="section token" data-mode="buddy" data-expr="diamond">
+      <div class="container token-grid">
+        <header class="sec-head left">
+          <p class="eyebrow mono">Token</p>
+          <h2><span data-site="ticker">$DOLIOS</span></h2>
+          <p class="lede">The community token of the Dolios project. Always verify the contract address here before you buy — copycats use the same name.</p>
+        </header>
+        <div class="ca-card">
+          <div class="ca-row">
+            <span class="ca-label mono">Contract address</span>
+            <span class="ca-chain mono" id="ca-chain"></span>
+          </div>
+          <div class="ca-box">
+            <code class="mono" id="ca-text">Coming soon</code>
+            <button class="copy mono" id="ca-copy" disabled>Copy</button>
+          </div>
+          <div class="ca-links">
+            <a class="btn-launch" id="ca-chart" href="#" target="_blank" rel="noopener" hidden><span class="dots">••</span> CHART ON GMGN</a>
+            <a class="btn-ghost-link mono" data-link="x" href="#" target="_blank" rel="noopener" hidden>Follow on X ↗</a>
+          </div>
+          <p class="fine">Not financial advice. Dolios the software is free and open source — you never need the token to use it.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 08 INSTALL -->
+    <section id="install" class="section install" data-mode="buddy" data-expr="happy">
+      <div class="container install-grid">
+        <div class="install-box">
+          <p class="eyebrow mono">Download</p>
+          <h2>Install Dolios</h2>
+          <p class="lede">One command. Python, Node.js and dependencies go into Dolios’ own folder.</p>
+          <div class="os-tabs" role="tablist">
+            <button role="tab" data-os="win" class="mono">Windows</button>
+            <button role="tab" data-os="unix" class="mono">macOS / Linux</button>
+          </div>
+          <div class="cmd"><code class="mono" id="cmd-text"></code><button class="copy mono" id="copy">Copy</button></div>
+          <ol class="steps">
+            <li>Run the command and pick your AI model provider.</li>
+            <li>Type <code>dolios</code> and say “connect my GMGN account”.</li>
+            <li>Ask for the trenches. Approve what you like.</li>
+          </ol>
+          <div class="install-links">
+            <a class="btn-launch" data-link="github" href="#" target="_blank" rel="noopener"><span class="dots">••</span> VIEW ON GITHUB</a>
+          </div>
         </div>
       </div>
     </section>
   </main>
 
-  <footer class="foot mono">
-    <span>Dolios · built on <a href="https://github.com/NousResearch/hermes-agent" target="_blank" rel="noopener">Hermes Agent</a> + <a href="https://github.com/GMGNAI/gmgn-skills" target="_blank" rel="noopener">GMGN Agent Skills</a> · MIT</span>
-    <span>Not financial advice. Not affiliated with GMGN or Nous Research.</span>
+  <footer class="foot">
+    <div class="foot-left mono">
+      <span>Dolios · built on <a href="https://github.com/NousResearch/hermes-agent" target="_blank" rel="noopener">Hermes Agent</a> + <a href="https://github.com/GMGNAI/gmgn-skills" target="_blank" rel="noopener">GMGN Agent Skills</a> · MIT</span>
+    </div>
+    <div class="foot-right mono">
+      <a data-link="github" href="#" target="_blank" rel="noopener">GitHub</a>
+      <a data-link="x" href="#" target="_blank" rel="noopener" hidden>X</a>
+      <span>Not financial advice. Not affiliated with GMGN or Nous Research.</span>
+    </div>
   </footer>
 
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script type="module" src="main.js"></script>
 </body>
 </html>
